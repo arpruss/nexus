@@ -70,6 +70,22 @@ void Extractor::dropLevel() {
 	selected.back() = false; //sink unselection purely for coherence
 }
 
+void Extractor::saveTXT() {
+	vector<nx::Node> nodes;
+	uint n_nodes = nexus->header.n_nodes;
+	vector<int> node_remap(n_nodes, -1);
+	for(uint i = 0; i < n_nodes-1; i++) {
+		if(!selected[i]) continue;
+		nexus->loadRam(i);
+		NodeData &data = nexus->nodedata[i];
+		vcg::Point3f *coords = data.coords(); // (vcg::Point3f*)data.memory;
+		vcg::Color4b *colors = data.colors(nexus->header.signature, nexus->nodes[i].nvert);
+		for (uint j = 0 ; j < nexus->nodes[i].nvert ; j++) {
+			cout << coords[j][0] << "," << coords[j][1] << "," << coords[j][2] << "," << (unsigned int)(unsigned char)colors[j][0] << "," << (unsigned int)(unsigned char)colors[j][1] << "," << (unsigned int)(unsigned char)colors[j][2] << "," << (unsigned int)(unsigned char)colors[j][3] << endl;
+		}
+	}
+}
+
 void Extractor::save(QString output, nx::Signature &signature) {
 	QFile file;
 	file.setFileName(output);
@@ -125,7 +141,7 @@ void Extractor::save(QString output, nx::Signature &signature) {
 		assert(patch.node < nodes.size());
 	}
 
-	cout << "Textures: " << nexus->header.n_textures << endl;
+	cerr << "Textures: " << nexus->header.n_textures << endl;
 	textures.resize(nexus->header.n_textures);
 
 	header.n_nodes = nodes.size();
@@ -328,7 +344,6 @@ void Extractor::compress(QFile &file, nx::Signature &signature, nx::Node &node, 
 
 
 void Extractor::savePly(QString filename) {
-
 	uint32_t n_nodes = nexus->header.n_nodes;
 	Node *nodes = nexus->nodes;
 	Patch *patches = nexus->patches;
@@ -536,7 +551,6 @@ void Extractor::saveUnifiedPly(QString filename) {
 		vcg::Point3f *coords = data.coords();
 		vcg::Color4b *colors = data.colors(nexus->header.signature, node.nvert);
 		uint16_t *triangles = data.faces(nexus->header.signature, node.nvert);
-
 
 		vector<int> remap(node.nvert, -1);
 		uint start = 0;

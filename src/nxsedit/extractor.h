@@ -24,6 +24,7 @@ public:
 
 	void save(QString output, nx::Signature &signature);
 	void savePly(QString filename);
+	void saveTXT();
 
 	void saveUnifiedPly(QString filename);
 protected:

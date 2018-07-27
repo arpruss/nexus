@@ -68,6 +68,7 @@ int main(int argc, char *argv[]) {
 	QString compresslib("corto");
 
 	bool info = false;
+	bool txt = false;
 	bool check = false;
 	bool compress = false;
 	bool drop_level = false;
@@ -89,6 +90,7 @@ int main(int argc, char *argv[]) {
 	//extraction options
 	opt.addOption('o', "nexus file", "filename of the nexus output file", &output);
 	opt.addOption('p', "ply file", "filename of the ply output file", &ply);
+	opt.addSwitch('x', "txt file", "dump nodes as R,G,B,Refl", &txt);
 
 	opt.addOption('s', "size", "size in MegaBytes of the final file [requires -o]", &max_size);
 	opt.addOption('e', "error", "remove nodes below this error from the node [requires -o]", &error);
@@ -108,7 +110,7 @@ int main(int argc, char *argv[]) {
 	opt.addOption('Q', "quantization factor", "quantization as a factor of error, default 0.1 [requires -z]", &error_q);
 
 	//other options
-//	opt.addOption('E', "recompute error", "recompute error [average, quadratic, logarithmic, curvature]", &recompute_error); //DOESN'T WORK, TO CHECK
+	opt.addOption('E', "recompute error", "recompute error [average, quadratic, logarithmic, curvature]", &recompute_error); //DOESN'T WORK, TO CHECK
 //	opt.addOption('m', "matrix", "multiply by matrix44 in format a:b:c... [requires -o]", &matrix); //DOESN'T WORK, TO CHECK
 //	opt.addOption('M', "imatrix", "multiply by inverse of matrix44 in format a:b:c... [requires -o]", &imatrix); //DOESN'T WORK, TO CHECK
 //	opt.addOption('P', "project file", "tex taylor project file", &projection); //DOESN'T WORK, TO CHECK
@@ -144,7 +146,6 @@ int main(int argc, char *argv[]) {
 			return 0;
 		}
 
-		cout << "Reading " << qPrintable(inputs[0].toLatin1()) << endl;
 
 		if(check) {
 			checks(nexus);
@@ -159,7 +160,7 @@ int main(int argc, char *argv[]) {
 		if(compress && output.isEmpty()) {
 			output = inputs[0].left(inputs[0].length()-4) + ".nxz";
 		}
-		if(output.isEmpty() && ply.isEmpty()) return 0;
+		if(output.isEmpty() && ply.isEmpty() && !txt) return 0;
 		if(!output.isEmpty() && !ply.isEmpty())  {
 			cerr << "The output can be a ply file or a nexus file, not both" << endl;
 			return -1;
@@ -168,6 +169,7 @@ int main(int argc, char *argv[]) {
 			cerr << "Output and input file must be different" << endl;
 			return -1;
 		}
+	
 		Extractor extractor(&nexus);
 
 		if(max_size != 0.0)
@@ -182,11 +184,15 @@ int main(int argc, char *argv[]) {
 		if(drop_level)
 			extractor.dropLevel();
 
+		if(txt) {       //export to ply
+			extractor.saveTXT();
+			cerr << "Saving to file " << endl;
+		}
+
 		if(!ply.isEmpty()) {       //export to ply
 			extractor.saveUnifiedPly(ply);
 			cout << "Saving to file " << qPrintable(ply) << endl;
 		} else if(!output.isEmpty()) { //export to nexus
-
 			bool invert = false;
 			if(!imatrix.isEmpty()) {
 				matrix = imatrix;
