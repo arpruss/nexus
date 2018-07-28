@@ -190,7 +190,7 @@ int main(int argc, char *argv[]) {
 		}
 
 		if(!ply.isEmpty()) {       //export to ply
-			extractor.saveUnifiedPly(ply);
+			extractor.savePly(ply);
 			cout << "Saving to file " << qPrintable(ply) << endl;
 		} else if(!output.isEmpty()) { //export to nexus
 			bool invert = false;
