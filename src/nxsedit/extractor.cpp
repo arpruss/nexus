@@ -75,7 +75,7 @@ void Extractor::saveTXT() {
 	uint n_nodes = nexus->header.n_nodes;
 	vector<int> node_remap(n_nodes, -1);
 	for(uint i = 0; i < n_nodes-1; i++) {
-	//	if(!selected[i]) continue;
+		if(!selected[i]) continue;
 		nexus->loadRam(i);
 		NodeData &data = nexus->nodedata[i];
 		vcg::Point3f *coords = data.coords(); // (vcg::Point3f*)data.memory;
